@@ -23,8 +23,8 @@
   "panels": [
     {
       "datasource": {
-        "type": "influxdb",
-        "uid": "bfug6eoku483kf"
+        "type": "prometheus",
+        "uid": "cfuuquez2apz4a"
       },
       "fieldConfig": {
         "defaults": {
@@ -55,7 +55,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -86,7 +86,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 5,
+      "id": 18,
       "options": {
         "legend": {
           "calcs": [],
@@ -104,60 +104,18 @@
       "targets": [
         {
           "datasource": {
-            "type": "influxdb",
-            "uid": "bfug6eoku483kf"
+            "type": "prometheus",
+            "uid": "cfuuquez2apz4a"
           },
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "jmeter",
-          "orderByTime": "ASC",
-          "policy": "autogen",
-          "query": "SELECT mean(\"count\") / 5\nFROM \"jmeter\"\nWHERE $timeFilter\n AND \"transaction\" = 'Get_Id'\nGROUP BY time(5s)\nfill(null)",
-          "rawQuery": true,
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "count"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              },
-              {
-                "params": [
-                  "Get"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "transaction::tag",
-              "operator": "=",
-              "value": "Get_Id"
-            }
-          ]
+          "editorMode": "code",
+          "expr": "kafka_producer_records_per_request_avg",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Get throughput (TPS)",
+      "title": "Kafka Producer Records per Request",
       "type": "timeseries"
     },
     {
@@ -365,7 +323,7 @@
         "x": 0,
         "y": 8
       },
-      "id": 4,
+      "id": 5,
       "options": {
         "legend": {
           "calcs": [],
@@ -403,7 +361,7 @@
           "measurement": "jmeter",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "SELECT mean(\"avg\") AS \"Average RT\" FROM \"autogen\".\"jmeter\" WHERE (\"transaction\"::tag != 'all') AND $timeFilter GROUP BY time($__interval), \"transaction\"::tag fill(linear)",
+          "query": "SELECT mean(\"count\") / 5\nFROM \"jmeter\"\nWHERE $timeFilter\n AND \"transaction\" = 'Get_Id'\nGROUP BY time(5s)\nfill(null)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -411,7 +369,7 @@
             [
               {
                 "params": [
-                  "avg"
+                  "count"
                 ],
                 "type": "field"
               },
@@ -421,7 +379,7 @@
               },
               {
                 "params": [
-                  "Average"
+                  "Get"
                 ],
                 "type": "alias"
               }
@@ -431,12 +389,12 @@
             {
               "key": "transaction::tag",
               "operator": "=",
-              "value": "all"
+              "value": "Get_Id"
             }
           ]
         }
       ],
-      "title": "Average",
+      "title": "Get throughput (TPS)",
       "type": "timeseries"
     },
     {
@@ -581,8 +539,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "cfuuquez2apz4a"
+        "type": "influxdb",
+        "uid": "bfug6eoku483kf"
       },
       "fieldConfig": {
         "defaults": {
@@ -613,7 +571,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -636,7 +594,32 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "jmeter.Average RT { transaction: Send_Id }"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -644,7 +627,7 @@
         "x": 0,
         "y": 16
       },
-      "id": 6,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [],
@@ -662,22 +645,60 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "cfuuquez2apz4a"
+            "type": "influxdb",
+            "uid": "bfug6eoku483kf"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "rate(http_server_requests_seconds_count{method=\"POST\", uri=\"/api/data\"}[1m])",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "jmeter",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "query": "SELECT mean(\"avg\") AS \"Average RT\" FROM \"autogen\".\"jmeter\" WHERE (\"transaction\"::tag != 'all') AND $timeFilter GROUP BY time($__interval), \"transaction\"::tag fill(linear)",
+          "rawQuery": true,
           "refId": "A",
-          "useBackend": false
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "avg"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              },
+              {
+                "params": [
+                  "Average"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "transaction::tag",
+              "operator": "=",
+              "value": "all"
+            }
+          ]
         }
       ],
-      "title": "POST Throughput (TPS) Prometeus",
+      "title": "Average",
       "type": "timeseries"
     },
     {
@@ -842,7 +863,7 @@
         "x": 0,
         "y": 24
       },
-      "id": 7,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
@@ -863,15 +884,19 @@
             "type": "prometheus",
             "uid": "cfuuquez2apz4a"
           },
-          "editorMode": "code",
-          "expr": "histogram_quantile(\r\n  0.95,\r\n  sum(\r\n    rate(http_server_requests_seconds_bucket{\r\n      method=\"POST\",\r\n      uri=\"/api/data\"\r\n    }[5m])\r\n  ) by (le)\r\n)",
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(http_server_requests_seconds_count{method=\"POST\", uri=\"/api/data\"}[1m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         }
       ],
-      "title": "95-й перцентиль Prometeus",
+      "title": "POST Throughput (TPS) Prometeus",
       "type": "timeseries"
     },
     {
@@ -1078,7 +1103,7 @@
         "x": 0,
         "y": 32
       },
-      "id": 10,
+      "id": 7,
       "options": {
         "legend": {
           "calcs": [],
@@ -1100,14 +1125,14 @@
             "uid": "cfuuquez2apz4a"
           },
           "editorMode": "code",
-          "expr": "jvm_threads_live_threads",
+          "expr": "histogram_quantile(\r\n  0.95,\r\n  sum(\r\n    rate(http_server_requests_seconds_bucket{\r\n      method=\"POST\",\r\n      uri=\"/api/data\"\r\n    }[5m])\r\n  ) by (le)\r\n)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Количество живых потоков",
+      "title": "95-й перцентиль Prometeus",
       "type": "timeseries"
     },
     {
@@ -1272,7 +1297,7 @@
         "x": 0,
         "y": 40
       },
-      "id": 11,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": [],
@@ -1294,14 +1319,14 @@
             "uid": "cfuuquez2apz4a"
           },
           "editorMode": "code",
-          "expr": "process_cpu_usage",
+          "expr": "jvm_threads_live_threads",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Загрузка CPU процессом",
+      "title": "Количество живых потоков",
       "type": "timeseries"
     },
     {
@@ -1466,7 +1491,7 @@
         "x": 0,
         "y": 48
       },
-      "id": 13,
+      "id": 11,
       "options": {
         "legend": {
           "calcs": [],
@@ -1488,14 +1513,14 @@
             "uid": "cfuuquez2apz4a"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_server_brokertopicmetrics_messagesin_total{job=\"kafka\"}[1m])",
+          "expr": "process_cpu_usage",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Kafka Входящие сообщения в секунду",
+      "title": "Загрузка CPU процессом",
       "type": "timeseries"
     },
     {
@@ -1660,7 +1685,7 @@
         "x": 0,
         "y": 56
       },
-      "id": 15,
+      "id": 13,
       "options": {
         "legend": {
           "calcs": [],
@@ -1682,14 +1707,14 @@
             "uid": "cfuuquez2apz4a"
           },
           "editorMode": "code",
-          "expr": "kafka_consumer_fetch_manager_records_consumed_rate{\r\n  client_id=\"consumer-data-consumer-1\"\r\n}",
+          "expr": "rate(kafka_server_brokertopicmetrics_messagesin_total{job=\"kafka\"}[1m])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Максимальное отставание консьюмера",
+      "title": "Kafka Входящие сообщения в секунду",
       "type": "timeseries"
     },
     {
@@ -1779,7 +1804,7 @@
             "uid": "cfuuquez2apz4a"
           },
           "editorMode": "code",
-          "expr": "rate(kafka_producer_record_send_rate[1m])",
+          "expr": "rate(kafka_producer_record_send_total[1m])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1854,6 +1879,103 @@
         "x": 0,
         "y": 64
       },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cfuuquez2apz4a"
+          },
+          "editorMode": "code",
+          "expr": "kafka_consumer_fetch_manager_records_lag_max{client_id=\"consumer-data-consumer-1\"}",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Максимальное отставание консьюмера",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cfuuquez2apz4a"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 72
+      },
       "id": 17,
       "options": {
         "legend": {
@@ -1894,12 +2016,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2026-08-12T09:21:32.774Z",
+    "to": "2026-08-12T10:11:12.784Z"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Load Test",
   "uid": "a7f2aaa7-41b9-4cc5-9988-5610136edf53",
-  "version": 14
+  "version": 17
 }
