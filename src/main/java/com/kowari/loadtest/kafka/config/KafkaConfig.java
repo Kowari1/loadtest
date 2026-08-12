@@ -1,5 +1,6 @@
 package com.kowari.loadtest.kafka.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.core.MicrometerProducerListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,8 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public ProducerFactory<String, String> producerFactory() {
+    public ProducerFactory<String, String> producerFactory(
+            MeterRegistry meterRegistry) {
 
         Map<String, Object> config = new HashMap<>();
 
@@ -34,7 +37,14 @@ public class KafkaConfig {
                 StringSerializer.class
         );
 
-        return new DefaultKafkaProducerFactory<>(config);
+        DefaultKafkaProducerFactory<String, String> factory =
+                new DefaultKafkaProducerFactory<>(config);
+
+        factory.addListener(
+                new MicrometerProducerListener<>(meterRegistry)
+        );
+
+        return factory;
     }
 
     @Bean

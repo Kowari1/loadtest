@@ -1,5 +1,8 @@
 package com.kowari.loadtest.kafka.consumer;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics;
+import jakarta.annotation.PreDestroy;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -20,15 +23,17 @@ public class KafkaMessageConsumer {
     private static final int PARTITION = 0;
 
     private final ObjectMapper objectMapper;
-
     private final KafkaConsumer<String, String> consumer;
     private final TopicPartition partition;
+    private final KafkaClientMetrics kafkaMetrics;
 
     public KafkaMessageConsumer(
             @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            MeterRegistry meterRegistry) {
 
         this.objectMapper = objectMapper;
+
         Properties properties = new Properties();
 
         properties.put(
@@ -64,8 +69,10 @@ public class KafkaMessageConsumer {
         consumer = new KafkaConsumer<>(properties);
 
         partition = new TopicPartition(TOPIC, PARTITION);
-
         consumer.assign(List.of(partition));
+
+        kafkaMetrics = new KafkaClientMetrics(consumer);
+        kafkaMetrics.bindTo(meterRegistry);
     }
 
     public synchronized List<String> readNewMessages() {
@@ -92,5 +99,11 @@ public class KafkaMessageConsumer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to read Kafka messages", e);
         }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        kafkaMetrics.close();
+        consumer.close();
     }
 }

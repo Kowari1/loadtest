@@ -12,10 +12,14 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.3
     container_name: kafka
+
     depends_on:
       - zookeeper
+
     ports:
       - "9092:9092"
+      - "7071:7071"
+
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -23,3 +27,9 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      KAFKA_OPTS: "-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-1.6.0.jar=7071:/opt/jmx_exporter/kafka.yml"
+
+    volumes:
+      - ./kafka/jmx_prometheus_javaagent-1.6.0.jar:/opt/jmx_exporter/jmx_prometheus_javaagent-1.6.0.jar
+      - ./kafka/kafka.yml:/opt/jmx_exporter/kafka.yml
