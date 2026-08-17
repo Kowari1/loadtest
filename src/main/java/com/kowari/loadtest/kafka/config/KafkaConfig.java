@@ -3,6 +3,7 @@ package com.kowari.loadtest.kafka.config;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -18,13 +19,14 @@ public class KafkaConfig {
 
     @Bean
     public ProducerFactory<String, String> producerFactory(
-            MeterRegistry meterRegistry) {
+            MeterRegistry meterRegistry,
+            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
 
         Map<String, Object> config = new HashMap<>();
 
         config.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                "localhost:9092"
+                bootstrapServers
         );
 
         config.put(

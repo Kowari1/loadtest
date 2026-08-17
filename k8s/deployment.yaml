@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadtest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadtest
+  template:
+    metadata:
+      labels:
+        app: loadtest
+    spec:
+      containers:
+        - name: loadtest
+          image: loadtest:1.1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
